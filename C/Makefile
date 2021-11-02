@@ -1,4 +1,3 @@
-
 # **************************************************************************** #
 #                                                                              #
 #                                                         :::      ::::::::    #
@@ -6,8 +5,8 @@
 #                                                     +:+ +:+         +:+      #
 #    By: amarcell <amarcell@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2021/07/13 15:26:08 by amarcell          #+#    #+#              #
-#    Updated: 2021/08/31 15:40:17 by amarcell         ###   ########.fr        #
+#    Created: 2021/11/02 15:25:57 by amarcell          #+#    #+#              #
+#    Updated: 2021/11/02 15:51:01 by amarcell         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -49,6 +48,8 @@ UWHITE		=		"\033[4;37m"       # White
 
 DEBUG_COLOR	=		$(CYAN)
 LEAKS_COLOR	=		$(YELLOW)
+NORME_TITLE_COLOR =	$(BPURPLE)
+NORME_COLOR =		$(PURPLE)
 
 #---------------------SRCS---------------------#
 
@@ -56,9 +57,9 @@ OBJS_DIR	=		objs
 
 OBJS_DEBUG_DIR	=	objs_debug
 
-HPPS		=		# your h++ file or nothing, works equally
+HS			=		# your h file or nothing, works equally
 
-SRCS		= 		# your c++ file
+SRCS		= 		# your c file
 
 EXTRA_CLEAN	=		# extra file do u want delete
 				
@@ -68,35 +69,34 @@ EXTRA_CLEAN	=		# extra file do u want delete
 
 NAME		=		
 
-CPP 		= 		@ clang++
+C 			= 		@ gcc
 
 CFLAGS		=		-Wall -Wextra -Werror
 
 XFLAGS		=
 
-OBJS		=		$(patsubst %.cpp, ${OBJS_DIR}/%.o, ${SRCS})
+OBJS		=		$(patsubst %.c, ${OBJS_DIR}/%.o, ${SRCS})
 
-$(OBJS_DIR)/%.o :	./%.cpp
+$(OBJS_DIR)/%.o :	./%.c
 			@ mkdir -p $(OBJS_DIR)
-			$(CPP) $(CFLAGS) $(XFLAGS) -c $< -o $@
+			$(C) $(CFLAGS) $(XFLAGS) -c $< -o $@
 
-OBJS_DEBUG	=		$(patsubst %.cpp, ${OBJS_DEBUG_DIR}/%.o, ${SRCS})
+OBJS_DEBUG	=		$(patsubst %.c, ${OBJS_DEBUG_DIR}/%.o, ${SRCS})
 
-$(OBJS_DEBUG_DIR)/%.o :	./%.cpp
+$(OBJS_DEBUG_DIR)/%.o :	./%.c
 			@ mkdir -p $(OBJS_DEBUG_DIR)
-			$(CPP) $(CFLAGS) $(XFLAGS) -g -c $< -o $@
+			$(C) $(CFLAGS) $(XFLAGS) -g -c $< -o $@
 
 #---------------------COMMANDS---------------------#
 
 all:		$(NAME)
 
 $(NAME):	$(OBJS)
-			@ $(CPP) $(CFLAGS) $(OBJS) -o $@
+			@ $(C) $(CFLAGS) $(OBJS) -o $@
 			@ echo $(BGREEN) "$(NAME) compiled successfully ✅" $(COLOR_OFF)
 
 clean:
 			@ rm -f $(OBJS)
-			@ rm -f $(OBJS_DEBUG)
 			@ rm -f $(EXTRA_CLEAN)
 			@ echo $(BWHITE) "$(NAME) .o files ware successfully deleted 📃➡ 🗑" $(COLOR_OFF)
 
@@ -110,7 +110,7 @@ re:			fclean all
 			@ echo $(BGREEN) "$(NAME) recompiled successfully ♻️ ✅" $(COLOR_OFF)
 
 debug:		$(OBJS_DEBUG)
-			@ $(CPP) $(CFLAGS) $(OBJS_DEBUG) -o $(NAME)
+			@ $(C) $(CFLAGS) $(OBJS_DEBUG) -o $(NAME)
 			@ echo $(DEBUG_COLOR) "$(NAME) DEBUG compiled successfully  🚫🐛 ✅"
 			@ read -p "Press enter to start debugging..."
 			@ lldb ./$(NAME)
@@ -122,17 +122,22 @@ leaks:
 			@ echo $(LEAKS_COLOR) "[... Finding leaks in $(NAME) ⛳️ ...]" 
 			@ leaks --atExit -- ./$(NAME)
 
+clear_space:
+			@rm -rf ~/Library/Caches
+			@rm -rf ~/Library/Application\ Support/Slack/Cache
+			@rm -rf ~/Library/Application\ Support/Slack/Service\ Worker/CacheStorage
+			@rm -rf ~/Library/Application\ Support/Code/Crashpad
+			@rm -rf ~/Library/Application\ Support/Code/Cache
+			@rm -rf ~/Library/Application\ Support/Code/User/workspaceStorage
+			@rm -rf ~/Library/Application\ Support/Code/CachedData
+			@rm -rf ~/Library/Application\ Support/Chrome/Default
+			@rm -rf ~/Library/Developer/CoreSimulator
+			@rm -rf ~/Library/Containers/com.docker.docker
 
+norme:		#if no  working norminette on .c files remove the '#' in "@ # norminette $(SRC)"
+			@ echo $(NORME_TITLE_COLOR) "-------|norme $(NAME)|-------" $(COLOR_OFF) $(NORME_COLOR)
+			@ norminette $(HS)
+			@ # norminette $(SRC)
+			@ echo $(COLOR_OFF)
 
-git-me:		git status && \
-			@read -p "do u want add? (y/n)": MSG;	\
-			if [MSG == "y"]; \
-				then echo "gay"; 
-				else exit;
-			fi;
-			# @read -p "Enter commit message:" MSG &&	\  
-    		#	git commit -m "$MSG" &&				\
-			#	git push
-
-
-.PHONY: 	all clean fclean re norme  debug re-debug leaks 
+.PHONY: 	all clean fclean re norme  debug re-debug leaks clear_space norme
